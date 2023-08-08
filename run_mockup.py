@@ -9,7 +9,7 @@ art_node = tree.nodes["ART_FILE"]
 art_node.image = img
 
 # Set the render settings
-bpy.context.scene.render.image_settings.file_format = 'PNG'  # Set format to PNG, but you can change it to other formats like 'JPEG'
+bpy.context.scene.render.image_settings.file_format = 'JPEG'  # Set format to PNG, but you can change it to other formats like 'JPEG'
 
 art_name = art_file.stem.replace("_", "-")
 mockup_name = Path(bpy.data.filepath).stem
