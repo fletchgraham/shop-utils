@@ -13,7 +13,7 @@ bpy.context.scene.render.image_settings.file_format = 'JPEG'
 
 art_name = art_file.stem.replace("_", "-")
 mockup_name = Path(bpy.data.filepath).stem
-bpy.context.scene.render.filepath = (art_file.parent.parent / "output" / f"{mockup_name}-{art_name}").as_posix()
+bpy.context.scene.render.filepath = (art_file.parent / "mockups" / f"{mockup_name}-{art_name}").as_posix()
 
 # Render the scene
 bpy.ops.render.render(write_still=True)

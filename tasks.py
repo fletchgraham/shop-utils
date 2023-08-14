@@ -1,10 +1,12 @@
 from pathlib import Path
 from invoke import task
+import subprocess
 
 from mockup_automator import main
 from img_utils import crop_resize, optimize_images_in_directory
 
 ROOT = Path(__file__).parent
+MOCKUP_SCRIPT = ROOT / "run_mockup.py"
 
 RATIOS = {
     "2x3": (7275, 10875),
@@ -14,9 +16,31 @@ RATIOS = {
     "Asizes": (7091, 10008),
 }
 
+def _get_blends_in_folders(target: Path) -> list[Path]:
+    blends = []
+    folders = [f for f in target.iterdir() if f.is_dir()]
+    for f in folders:
+        blends.append([file for file in f.iterdir() if file.suffix == ".blend"][0])
+    return blends
+
+def _get_artfile(listing_dir: Path) -> Path:
+    jpgs = [f for f in listing_dir.iterdir() if f.suffix == ".jpg"]
+    for j in jpgs:
+        if j.stem.split("_")[-1] == "3x4":
+            return j
+
+
 @task
-def mockup(c, name="Fletch"):
-    main()
+def mockup(c, listings, mockups, fit=1900):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    mockups_path = Path(mockups)
+    mockup_blends = _get_blends_in_folders(mockups_path)
+
+    for listing in listings:
+        art_file = _get_artfile(listing)
+        for mockup in mockup_blends:
+            subprocess.call(["blender", "-b", mockup, "-P", MOCKUP_SCRIPT, "--", art_file])
+
 
 @task
 def render(c, src, percentage=100):
