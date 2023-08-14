@@ -11,9 +11,10 @@ art_node.image = img
 # Set the render settings
 bpy.context.scene.render.image_settings.file_format = 'JPEG'
 
-art_name = art_file.stem.replace("_", "-")
+art_name = art_file.stem
 mockup_name = Path(bpy.data.filepath).stem
-bpy.context.scene.render.filepath = (art_file.parent / "mockups" / f"{mockup_name}-{art_name}").as_posix()
+out_name = f"{'_'.join(art_name.split('_')[:-1])}_{mockup_name.replace('mockup_', '')}"
+bpy.context.scene.render.filepath = (art_file.parent / "mockups" / out_name).as_posix()
 
 # Render the scene
 bpy.ops.render.render(write_still=True)
