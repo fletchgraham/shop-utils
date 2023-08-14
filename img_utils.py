@@ -1,7 +1,7 @@
 from pathlib import Path
 from PIL import Image
 
-def resize(src: Path, dst: Path, new_width: int, new_height: int):
+def crop_resize(src: Path, dst: Path, new_width: int, new_height: int):
 
     print(f"resizing {src}")
 
@@ -24,10 +24,12 @@ def resize(src: Path, dst: Path, new_width: int, new_height: int):
         cropped_img = img.crop((left, upper, right, lower))
         resized_img = cropped_img.resize((new_width, new_height))
 
-        resized_img.save(dst)
+        converted = resized_img.convert("RGB")
+
+        converted.save(dst, quality=100, optimize=True)
 
 
-def resize_image(input_path, output_path, base_width=800):
+def resize_image(input_path, output_path, quality=85, base_width=800):
     """
     Resize the image, maintaining its aspect ratio.
     :param input_path: Path to the input image.
@@ -36,6 +38,7 @@ def resize_image(input_path, output_path, base_width=800):
     """
     # Open an image file
     with Image.open(input_path) as img:
+        img = img.convert("RGB")
         # Calculate aspect ratio
         w_percent = base_width / img.size[0]
         h_size = int(img.size[1] * w_percent)
@@ -44,7 +47,7 @@ def resize_image(input_path, output_path, base_width=800):
         img = img.resize((base_width, h_size))
         
         # Save image with optimization
-        img.save(output_path, "JPEG", quality=85, optimize=True, progressive=True)
+        img.save(output_path, "JPEG", quality=quality, optimize=True, progressive=True)
 
 def optimize_images_in_directory(directory: Path, base_width=800):
     """

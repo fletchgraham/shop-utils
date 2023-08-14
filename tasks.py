@@ -2,7 +2,7 @@ from pathlib import Path
 from invoke import task
 
 from mockup_automator import main
-from img_utils import resize, optimize_images_in_directory
+from img_utils import crop_resize, optimize_images_in_directory
 
 ROOT = Path(__file__).parent
 
@@ -24,11 +24,12 @@ def render(c, src, percentage=100):
     render_script = ROOT / "render.py"
     for blend in blends:
         c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
-        render_src = blend.parent / blend.stem / f"{blend.stem}_src.png"
+        src_path = blend.parent / blend.stem / f"{blend.stem}_src.png"
         for ratio, dims in RATIOS.items():
             w = int(dims[0] * percentage / 100)
             h = int(dims[1] * percentage / 100)
-            resize(render_src, render_src.with_stem(render_src.stem.replace("src", ratio)), new_width=w, new_height=h)
+            out_path = src_path.with_stem(src_path.stem.replace("src", ratio)).with_suffix(".jpg")
+            crop_resize(src_path, out_path, new_width=w, new_height=h)
 
 @task
 def optimize(c, target, fit: int=800):
