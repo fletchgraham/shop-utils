@@ -31,7 +31,7 @@ def _get_artfile(listing_dir: Path) -> Path:
 
 
 @task
-def mockup(c, listings, mockups, fit=1900):
+def mockup(c, listings, mockups, fit=1800):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
     mockups_path = Path(mockups)
     mockup_blends = _get_blends_in_folders(mockups_path)
@@ -40,6 +40,7 @@ def mockup(c, listings, mockups, fit=1900):
         art_file = _get_artfile(listing)
         for mockup in mockup_blends:
             subprocess.call(["blender", "-b", mockup, "-P", MOCKUP_SCRIPT, "--", art_file])
+        optimize_images_in_directory(listing / "mockups", base_width=fit)
 
 
 @task

@@ -59,4 +59,5 @@ def optimize_images_in_directory(directory: Path, base_width=800):
     for filename in directory.iterdir():
         if filename.suffix in [".jpg", ".png"]:
             output_path = directory / f"optimized_{filename.name}"
-            resize_image(filename, output_path, base_width)
+            print(f"resizing to {base_width}")
+            resize_image(filename, output_path, quality=85, base_width=base_width)
