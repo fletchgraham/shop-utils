@@ -25,3 +25,35 @@ def resize(src: Path, dst: Path, new_width: int, new_height: int):
         resized_img = cropped_img.resize((new_width, new_height))
 
         resized_img.save(dst)
+
+
+def resize_image(input_path, output_path, base_width=800):
+    """
+    Resize the image, maintaining its aspect ratio.
+    :param input_path: Path to the input image.
+    :param output_path: Path to save the output image.
+    :param base_width: Desired width of the output image.
+    """
+    # Open an image file
+    with Image.open(input_path) as img:
+        # Calculate aspect ratio
+        w_percent = base_width / img.size[0]
+        h_size = int(img.size[1] * w_percent)
+        
+        # Resize image
+        img = img.resize((base_width, h_size))
+        
+        # Save image with optimization
+        img.save(output_path, "JPEG", quality=85, optimize=True, progressive=True)
+
+def optimize_images_in_directory(directory: Path, base_width=800):
+    """
+    Optimize all images in a directory.
+    :param directory: Directory containing the images to be optimized.
+    :param base_width: Desired width of the output images.
+    """
+    directory = Path(directory)
+    for filename in directory.iterdir():
+        if filename.suffix in [".jpg", ".png"]:
+            output_path = directory / f"optimized_{filename.name}"
+            resize_image(filename, output_path, base_width)

@@ -2,7 +2,7 @@ from pathlib import Path
 from invoke import task
 
 from mockup_automator import main
-from img_utils import resize
+from img_utils import resize, optimize_images_in_directory
 
 ROOT = Path(__file__).parent
 
@@ -29,3 +29,7 @@ def render(c, src, percentage=100):
             w = int(dims[0] * percentage / 100)
             h = int(dims[1] * percentage / 100)
             resize(render_src, render_src.with_stem(render_src.stem.replace("src", ratio)), new_width=w, new_height=h)
+
+@task
+def optimize(c, target, fit: int=800):
+    optimize_images_in_directory(Path(target), base_width=fit)
