@@ -26,7 +26,7 @@ def crop_resize(src: Path, dst: Path, new_width: int, new_height: int):
 
         converted = resized_img.convert("RGB")
 
-        converted.save(dst, quality=100, optimize=True)
+        converted.save(dst, quality=95, optimize=True)
 
 
 def resize_image(input_path, output_path, quality=85, base_width=800):
