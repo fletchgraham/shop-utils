@@ -1,6 +1,7 @@
 from pathlib import Path
 from invoke import task
 import subprocess
+from zipfile import ZipFile
 
 from mockup_automator import main
 from img_utils import crop_resize, optimize_images_in_directory
@@ -48,13 +49,19 @@ def render(c, src, percentage=100):
     blends = [f for f in Path(src).iterdir() if f.suffix.lower() == ".blend"]
     render_script = ROOT / "render.py"
     for blend in blends:
-        c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
+        # c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
         src_path = blend.parent / blend.stem / f"{blend.stem}_src.png"
+        to_zip = []
         for ratio, dims in RATIOS.items():
             w = int(dims[0] * percentage / 100)
             h = int(dims[1] * percentage / 100)
             out_path = src_path.with_stem(src_path.stem.replace("src", ratio)).with_suffix(".jpg")
             crop_resize(src_path, out_path, new_width=w, new_height=h)
+            to_zip.append(out_path)
+        
+        with ZipFile(src_path.with_suffix(".zip"), "w") as zipf:
+            for f in to_zip:
+                zipf.write(f, arcname=f.name)
 
 @task
 def optimize(c, target, fit: int=800):
