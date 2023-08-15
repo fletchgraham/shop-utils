@@ -49,7 +49,7 @@ def render(c, src, percentage=100):
     blends = [f for f in Path(src).iterdir() if f.suffix.lower() == ".blend"]
     render_script = ROOT / "render.py"
     for blend in blends:
-        # c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
+        c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
         src_path = blend.parent / blend.stem / f"{blend.stem}_src.png"
         to_zip = []
         for ratio, dims in RATIOS.items():
