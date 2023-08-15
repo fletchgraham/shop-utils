@@ -59,7 +59,8 @@ def render(c, src, percentage=100):
             crop_resize(src_path, out_path, new_width=w, new_height=h)
             to_zip.append(out_path)
         
-        with ZipFile(src_path.with_suffix(".zip"), "w") as zipf:
+        zip_path = src_path.with_stem("_".join(src_path.stem.split("_")[:-1])).with_suffix(".zip")
+        with ZipFile(zip_path, "w") as zipf:
             for f in to_zip:
                 zipf.write(f, arcname=f.name)
 
