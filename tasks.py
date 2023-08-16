@@ -6,6 +6,7 @@ import random
 
 from mockup_automator import main
 from img_utils import crop_resize, optimize_images_in_directory
+from copy_listing import copy_listing_for_folder
 
 ROOT = Path(__file__).parent
 MOCKUP_SCRIPT = ROOT / "run_mockup.py"
@@ -84,3 +85,8 @@ def choose_ten_mockups(c, listings):
         choices = random.sample(lo_mockups, 10)
         for choice in choices:
             choice.rename(choice_dir / choice.name)
+
+
+@task
+def copy_listing(c, url: str, listing: str):
+    copy_listing_for_folder(url, Path(listing))

@@ -1,11 +1,10 @@
+"""works with etsy on chrome on a retina m2 macbook air."""
+
 from pathlib import Path
 
 import pyautogui
 import webbrowser
 import time
-
-import pyscreeze
-import PIL
 
 ROOT = Path(__file__).parent
 REGIONS = ROOT / "screen_regions"
@@ -16,16 +15,73 @@ ADD_VIDEO = REGIONS / "add_video.png"
 COPY_LISTING = REGIONS / "copy_listing.png"
 DELETE_FILE = REGIONS / "delete_file.png"
 DELETE_PHOTO = REGIONS / "delete_photo.png"
+FILE_UPLOADED = REGIONS / "file_uploaded.png"
 LEAVE_PAGE = REGIONS / "leave_page.png"
 PRIMARY_LISTING = REGIONS / "primary_listing.png"
 PUBLISH_CONFIRM = REGIONS / "publish_confirm.png"
 PUBLISH_COPY = REGIONS / "publish_copy.png"
 
-# ask user for url to edit listing page
-# open browser to edit listing
-url = input("URL: ")
-webbrowser.open(url)  # replace with your desired URL
-time.sleep(2)  # wait for the web page to load
+
+def copy_listing_for_folder(edit_url: str, listing_dir: Path):
+    """copy the given listing for the given listing folder."""
+    # TODO: make sure listing exists
+    # TODO: make sure zip exists
+    # TODO: make sure selects exist
+
+    webbrowser.open(edit_url)  # replace with your desired URL
+    time.sleep(1.5)  # wait for the web page to load
+
+    click_region(COPY_LISTING, delay=2)
+
+    scroll_to_find(ADD_VIDEO, increment=-3)
+
+    # mouse to the primary listing to reveal the delete button
+    pyautogui.moveTo(retina(pyautogui.locateCenterOnScreen(PRIMARY_LISTING.as_posix())))
+
+    # delete existing photos
+    for _ in range(10):
+        click_region(DELETE_PHOTO, delay=.3)
+
+    # add new photos
+    click_region(ADD_PHOTOS, delay=.3)
+    pyautogui.hotkey("command", "shift", "g")
+    time.sleep(.1)
+
+    # enter the path to selects
+    selects_path = listing_dir / "mockups" / "selects"
+    pyautogui.write(selects_path.as_posix())
+    pyautogui.press("enter")
+    time.sleep(.1)
+    pyautogui.hotkey("command", "a")
+    time.sleep(.1)
+    pyautogui.press("enter")
+    time.sleep(.1)
+
+    # delete existing digital file
+    scroll_to_find(ADD_FILE)
+    click_region(DELETE_FILE, delay=.2)
+    
+    # add new digitial file
+    scroll_to_find(ADD_FILE)
+    click_region(ADD_FILE)
+    pyautogui.hotkey("command", "shift", "g")
+    time.sleep(.1)
+    zip_path = listing_dir / (listing_dir.name + ".zip")
+    pyautogui.write(zip_path.as_posix())
+    pyautogui.press("enter")
+    pyautogui.press("enter")
+    time.sleep(10)
+
+    while not pyautogui.locateOnScreen(FILE_UPLOADED.as_posix(), confidence=.9):
+        time.sleep(.1)
+
+    click_region(PUBLISH_COPY, delay=.5)
+    click_region(PUBLISH_CONFIRM, delay=.5)
+
+    # if "leave page" can be found, click it
+    leave_page = pyautogui.locateOnScreen(LEAVE_PAGE.as_posix())
+    if leave_page:
+        click_region(LEAVE_PAGE)
 
 
 def retina(point: pyautogui.Point) -> pyautogui.Point:
@@ -42,74 +98,11 @@ def click_region(region: Path, delay=2):
         time.sleep(delay)
     else:
         raise ValueError(f"Region not found: {region.stem}")
-    
-# click "copy"
-click_region(COPY_LISTING)
 
-# scroll down till photos are visible
-def scroll_to_find(region: Path):
+def scroll_to_find(region: Path, increment=-2):
     for _ in range(20):
         reg = pyautogui.locateOnScreen(region.as_posix(), confidence=.8)
         if reg:
             return
         else:
-            pyautogui.scroll(-2)
-
-scroll_to_find(ADD_VIDEO)
-
-# mouse to "primary"
-pyautogui.moveTo(retina(pyautogui.locateCenterOnScreen(PRIMARY_LISTING.as_posix())))
-
-# mouse to trash can
-# click ten times with small delay
-for _ in range(10):
-    click_region(DELETE_PHOTO, delay=1)
-
-# mouse to add photos and click
-click_region(ADD_PHOTOS)
-
-# cmd shift G
-pyautogui.hotkey("command", "shift", "g")
-
-# enter the path to selects
-# cmd a
-# enter
-# wait a bit
-# scroll down to digital files
-# mouse to x button and click
-# click add file
-# cmd shift g
-# enter path to zip
-# enter
-# if "leave page" can be found, click it
-# wait a bit
-
-# Step 1: Open a web page
-
-# Step 2: Locate and click the first button based on the screenshot
-# first_button = pyautogui.locateOnScreen('first_button.png', confidence=0.8)
-# if first_button:
-#     pyautogui.click(pyautogui.center(first_button))
-#     time.sleep(2)  # delay after clicking the first button
-# else:
-#     print("First button not found!")
-
-# # Step 3: Locate and click the second button based on the screenshot
-# second_button = pyautogui.locateOnScreen('second_button.png', confidence=0.8)
-# if second_button:
-#     pyautogui.click(pyautogui.center(second_button))
-#     time.sleep(2)  # delay after clicking the second button
-# else:
-#     print("Second button not found!")
-
-# # Step 4: File Upload - Usually a dialog will open when you click an 'Upload' button
-# # To handle the file dialog, you need to type the file path and then press 'Enter'
-# file_path = "/path/to/your/file.txt"
-# pyautogui.write(file_path)
-# time.sleep(1)  # small delay to ensure the path is fully typed
-# pyautogui.press('enter')
-
-# # Note: Make sure 'first_button.png' and 'second_button.png' are in the same directory as your script 
-# # or provide the full path to the images.
-# # The `confidence` argument allows for a little flexibility in the image match. 
-# # This is especially useful if the screenshot isn't pixel-perfect.
+            pyautogui.scroll(increment)   
