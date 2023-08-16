@@ -12,6 +12,7 @@ REGIONS = ROOT / "screen_regions"
 
 ADD_FILE = REGIONS / "add_file.png"
 ADD_PHOTOS = REGIONS / "add_photos.png"
+ADD_VIDEO = REGIONS / "add_video.png"
 COPY_LISTING = REGIONS / "copy_listing.png"
 DELETE_FILE = REGIONS / "delete_file.png"
 DELETE_PHOTO = REGIONS / "delete_photo.png"
@@ -24,31 +25,52 @@ PUBLISH_COPY = REGIONS / "publish_copy.png"
 # open browser to edit listing
 url = input("URL: ")
 webbrowser.open(url)  # replace with your desired URL
-time.sleep(3)  # wait for the web page to load
+time.sleep(2)  # wait for the web page to load
 
-# click "copy"
 
 def retina(point: pyautogui.Point) -> pyautogui.Point:
+    if not point:
+        return None
     return pyautogui.Point(point.x // 2, point.y // 2)
 
 def click_region(region: Path, delay=2):
-    reg = pyautogui.locateCenterOnScreen(region.as_posix(), confidence=0.8)
+    reg = pyautogui.locateCenterOnScreen(region.as_posix(), confidence=0.9)
     reg = retina(reg)
     if reg:
         print(reg)
         pyautogui.click(reg)
-        time.sleep(2)
+        time.sleep(delay)
     else:
         raise ValueError(f"Region not found: {region.stem}")
     
+# click "copy"
 click_region(COPY_LISTING)
 
 # scroll down till photos are visible
+def scroll_to_find(region: Path):
+    for _ in range(20):
+        reg = pyautogui.locateOnScreen(region.as_posix(), confidence=.8)
+        if reg:
+            return
+        else:
+            pyautogui.scroll(-2)
+
+scroll_to_find(ADD_VIDEO)
+
 # mouse to "primary"
+pyautogui.moveTo(retina(pyautogui.locateCenterOnScreen(PRIMARY_LISTING.as_posix())))
+
 # mouse to trash can
 # click ten times with small delay
+for _ in range(10):
+    click_region(DELETE_PHOTO, delay=1)
+
 # mouse to add photos and click
+click_region(ADD_PHOTOS)
+
 # cmd shift G
+pyautogui.hotkey("command", "shift", "g")
+
 # enter the path to selects
 # cmd a
 # enter
