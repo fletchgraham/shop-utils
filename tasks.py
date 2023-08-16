@@ -2,6 +2,7 @@ from pathlib import Path
 from invoke import task
 import subprocess
 from zipfile import ZipFile
+import random
 
 from mockup_automator import main
 from img_utils import crop_resize, optimize_images_in_directory
@@ -67,3 +68,19 @@ def render(c, src, percentage=100):
 @task
 def optimize(c, target, fit: int=800):
     optimize_images_in_directory(Path(target), base_width=fit)
+
+
+@task
+def choose_ten_mockups(c, listings):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    for listing in listings:
+        print(f"working on {listing}")
+        mockup_dir = listing / "mockups"
+        choice_dir = mockup_dir / "selects"
+        choice_dir.mkdir(exist_ok=True)
+        if len(list(choice_dir.iterdir())) == 10:
+            continue
+        lo_mockups = [f for f in mockup_dir.iterdir() if f.suffix == ".jpg" and f.stem.split("_")[0] == "lo"]
+        choices = random.sample(lo_mockups, 10)
+        for choice in choices:
+            choice.rename(choice_dir / choice.name)
