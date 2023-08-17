@@ -45,20 +45,20 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
         click_region(DELETE_PHOTO, delay=.3)
 
     # add new photos
-    click_region(ADD_PHOTOS, delay=.3)
+    click_region(ADD_PHOTOS, delay=1)
     pyautogui.hotkey("command", "shift", "g")
-    time.sleep(.1)
+    time.sleep(.3)
 
     # enter the path to selects
     selects_path = listing_dir / "mockups" / "selects"
     pyautogui.write(selects_path.as_posix())
     time.sleep(.2)
     pyautogui.press("enter")
-    time.sleep(.1)
+    time.sleep(.2)
     pyautogui.hotkey("command", "a")
-    time.sleep(.1)
+    time.sleep(.2)
     pyautogui.press("enter")
-    time.sleep(.1)
+    time.sleep(.2)
 
     wait_for_region(PRIMARY_LISTING)
 
@@ -68,14 +68,14 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     
     # add new digitial file
     scroll_to_find(ADD_FILE)
-    click_region(ADD_FILE)
-    time.sleep(.2)
+    click_region(ADD_FILE, delay=1.2)
     pyautogui.hotkey("command", "shift", "g")
-    time.sleep(.1)
+    time.sleep(.3)
     zip_path = listing_dir / (listing_dir.name + ".zip")
     pyautogui.write(zip_path.as_posix())
     time.sleep(.2)
     pyautogui.press("enter")
+    time.sleep(.2)
     pyautogui.press("enter")
     time.sleep(2)
 
