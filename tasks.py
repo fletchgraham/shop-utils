@@ -88,5 +88,7 @@ def choose_ten_mockups(c, listings):
 
 
 @task
-def copy_listing(c, url: str, listing: str):
-    copy_listing_for_folder(url, Path(listing))
+def copy_listing(c, url: str, listings: str):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    for listing in listings:
+        copy_listing_for_folder(url, Path(listing))
