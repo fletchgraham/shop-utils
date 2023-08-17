@@ -12,6 +12,7 @@ REGIONS = ROOT / "screen_regions"
 ADD_FILE = REGIONS / "add_file.png"
 ADD_PHOTOS = REGIONS / "add_photos.png"
 ADD_VIDEO = REGIONS / "add_video.png"
+BACK_TO_LISTINGS = REGIONS / "back_to_listings.png"
 COPY_LISTING = REGIONS / "copy_listing.png"
 DELETE_FILE = REGIONS / "delete_file.png"
 DELETE_PHOTO = REGIONS / "delete_photo.png"
@@ -29,11 +30,12 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     # TODO: make sure selects exist
 
     webbrowser.open(edit_url)  # replace with your desired URL
-    time.sleep(1.5)  # wait for the web page to load
+    wait_for_region(COPY_LISTING)
 
     click_region(COPY_LISTING, delay=2)
+    wait_for_region(BACK_TO_LISTINGS)
 
-    scroll_to_find(ADD_VIDEO, increment=-3)
+    scroll_to_find(ADD_VIDEO, increment=-5)
 
     # mouse to the primary listing to reveal the delete button
     pyautogui.moveTo(retina(pyautogui.locateCenterOnScreen(PRIMARY_LISTING.as_posix())))
@@ -50,6 +52,7 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     # enter the path to selects
     selects_path = listing_dir / "mockups" / "selects"
     pyautogui.write(selects_path.as_posix())
+    time.sleep(.2)
     pyautogui.press("enter")
     time.sleep(.1)
     pyautogui.hotkey("command", "a")
@@ -57,23 +60,26 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     pyautogui.press("enter")
     time.sleep(.1)
 
+    wait_for_region(PRIMARY_LISTING)
+
     # delete existing digital file
-    scroll_to_find(ADD_FILE)
+    scroll_to_find(ADD_FILE, increment=-5)
     click_region(DELETE_FILE, delay=.2)
     
     # add new digitial file
     scroll_to_find(ADD_FILE)
     click_region(ADD_FILE)
+    time.sleep(.2)
     pyautogui.hotkey("command", "shift", "g")
     time.sleep(.1)
     zip_path = listing_dir / (listing_dir.name + ".zip")
     pyautogui.write(zip_path.as_posix())
+    time.sleep(.2)
     pyautogui.press("enter")
     pyautogui.press("enter")
-    time.sleep(10)
+    time.sleep(2)
 
-    while not pyautogui.locateOnScreen(FILE_UPLOADED.as_posix(), confidence=.9):
-        time.sleep(.1)
+    wait_for_region(FILE_UPLOADED)
 
     click_region(PUBLISH_COPY, delay=.5)
     click_region(PUBLISH_CONFIRM, delay=.5)
@@ -84,6 +90,15 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
         click_region(LEAVE_PAGE)
 
 
+def wait_for_region(region: Path, timeout=20):
+    time.sleep(.1)
+    for _ in range(timeout * 10 - 1):
+        if pyautogui.locateOnScreen(region.as_posix(), confidence=.9):
+            return
+        else:
+            time.sleep(.1)
+    raise TimeoutError(f"Region never appeared: {region.stem}")
+
 def retina(point: pyautogui.Point) -> pyautogui.Point:
     if not point:
         return None
@@ -93,7 +108,6 @@ def click_region(region: Path, delay=2):
     reg = pyautogui.locateCenterOnScreen(region.as_posix(), confidence=0.9)
     reg = retina(reg)
     if reg:
-        print(reg)
         pyautogui.click(reg)
         time.sleep(delay)
     else:
@@ -105,4 +119,5 @@ def scroll_to_find(region: Path, increment=-2):
         if reg:
             return
         else:
-            pyautogui.scroll(increment)   
+            pyautogui.scroll(increment)
+    raise ValueError(f"Couldn't scroll to find region {region.stem}")
