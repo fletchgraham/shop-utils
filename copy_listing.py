@@ -13,6 +13,7 @@ ADD_FILE = REGIONS / "add_file.png"
 ADD_PHOTOS = REGIONS / "add_photos.png"
 ADD_VIDEO = REGIONS / "add_video.png"
 BACK_TO_LISTINGS = REGIONS / "back_to_listings.png"
+CANCEL_FILE_DIALOG = REGIONS / "cancel_file_dialog.png"
 COPY_LISTING = REGIONS / "copy_listing.png"
 DELETE_FILE = REGIONS / "delete_file.png"
 DELETE_PHOTO = REGIONS / "delete_photo.png"
@@ -43,10 +44,11 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
 
     # delete existing photos
     for _ in range(10):
-        click_region(DELETE_PHOTO, delay=.3)
+        click_region(DELETE_PHOTO, delay=.05)
 
     # add new photos
-    click_region(ADD_PHOTOS, delay=1)
+    click_region(ADD_PHOTOS, delay=1.5)
+    wait_for_region(CANCEL_FILE_DIALOG)  # make sure dialog appears
 
     # enter the path to selects
     selects_path = listing_dir / "mockups" / "selects"
@@ -56,9 +58,9 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     pyautogui.hotkey("command", "a")
     time.sleep(.2)
     pyautogui.press("enter")
-    time.sleep(.2)
+    time.sleep(1)
 
-    wait_for_region(PRIMARY_LISTING)
+    wait_for_region(PRIMARY_LISTING, confidence=.99)
 
     # delete existing digital file
     scroll_to_find(ADD_FILE, increment=-5)
@@ -71,6 +73,7 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     go_to_path(zip_path)
     pyautogui.press("enter")
     time.sleep(2)
+    scroll_to_find(ADD_FILE)
 
     wait_for_region(FILE_UPLOADED)
 
@@ -107,7 +110,7 @@ def go_to_path(target: Path, max_tries=10):
         tries += 1
 
 
-def wait_for_region(region: Path, timeout=20):
+def wait_for_region(region: Path, timeout=20, confidence=.9):
     time.sleep(.1)
     for _ in range(timeout * 10 - 1):
         if pyautogui.locateOnScreen(region.as_posix(), confidence=.9):
