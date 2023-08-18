@@ -17,6 +17,7 @@ COPY_LISTING = REGIONS / "copy_listing.png"
 DELETE_FILE = REGIONS / "delete_file.png"
 DELETE_PHOTO = REGIONS / "delete_photo.png"
 FILE_UPLOADED = REGIONS / "file_uploaded.png"
+GO_DIALOG = REGIONS / "go_dialog.png"
 LEAVE_PAGE = REGIONS / "leave_page.png"
 PRIMARY_LISTING = REGIONS / "primary_listing.png"
 PUBLISH_CONFIRM = REGIONS / "publish_confirm.png"
@@ -46,15 +47,12 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
 
     # add new photos
     click_region(ADD_PHOTOS, delay=1)
-    pyautogui.hotkey("command", "shift", "g")
-    time.sleep(.3)
 
     # enter the path to selects
     selects_path = listing_dir / "mockups" / "selects"
-    pyautogui.write(selects_path.as_posix())
-    time.sleep(.2)
-    pyautogui.press("enter")
-    time.sleep(.2)
+    
+    go_to_path(selects_path)
+
     pyautogui.hotkey("command", "a")
     time.sleep(.2)
     pyautogui.press("enter")
@@ -69,13 +67,8 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     # add new digitial file
     scroll_to_find(ADD_FILE)
     click_region(ADD_FILE, delay=1.2)
-    pyautogui.hotkey("command", "shift", "g")
-    time.sleep(.3)
     zip_path = listing_dir / (listing_dir.name + ".zip")
-    pyautogui.write(zip_path.as_posix())
-    time.sleep(.2)
-    pyautogui.press("enter")
-    time.sleep(.2)
+    go_to_path(zip_path)
     pyautogui.press("enter")
     time.sleep(2)
 
@@ -88,6 +81,30 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     leave_page = pyautogui.locateOnScreen(LEAVE_PAGE.as_posix())
     if leave_page:
         click_region(LEAVE_PAGE)
+
+def go_to_path(target: Path, max_tries=10):
+    """Assumes file dialog or finder is open."""
+    pyautogui.hotkey("command", "shift", "g")
+    time.sleep(.3)
+
+    # maybe it will just work...
+    pyautogui.write(target.as_posix())
+    time.sleep(.2)
+    pyautogui.press("enter")
+    time.sleep(.2)
+
+    # if not, try again
+    tries = 0
+    while pyautogui.locateOnScreen(GO_DIALOG.as_posix(), confidence=9):
+        if tries == max_tries:
+            raise TimeoutError(f"Could not go to path: {target} - Max tries reached.")
+        
+        click_region(GO_DIALOG, delay=.2)
+        pyautogui.write(target.as_posix())
+        time.sleep(.2)
+        pyautogui.press("enter")
+        time.sleep(.2)
+        tries += 1
 
 
 def wait_for_region(region: Path, timeout=20):
