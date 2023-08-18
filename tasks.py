@@ -66,6 +66,7 @@ def render(c, src, percentage=100):
             for f in to_zip:
                 zipf.write(f, arcname=f.name)
 
+
 @task
 def optimize(c, target, fit: int=800):
     optimize_images_in_directory(Path(target), base_width=fit)
@@ -74,8 +75,10 @@ def optimize(c, target, fit: int=800):
 @task
 def choose_ten_mockups(c, listings):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
-    for listing in listings:
-        print(f"working on {listing}")
+    total = len(listings)
+    for current, listing in enumerate(listings):
+
+        print(f"working on {listing.stem} - {current + 1} of {total}")
         mockup_dir = listing / "mockups"
         choice_dir = mockup_dir / "selects"
         choice_dir.mkdir(exist_ok=True)
@@ -90,5 +93,20 @@ def choose_ten_mockups(c, listings):
 @task
 def copy_listing(c, url: str, listings: str):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
-    for listing in listings:
-        copy_listing_for_folder(url, Path(listing))
+    total = len(listings)
+    errors = {}
+    for current, listing in enumerate(listings):
+        try:
+            copy_listing_for_folder(url, Path(listing))
+            print(f"Published {listing.stem} - {current + 1} of {total}")
+        except Exception as e:
+            errors[listing.stem] = e
+            print(f"ERROR ON LISTING: {listing.stem}")
+            print(e)
+
+    if errors:
+        print("THERE WERE SOME ERRORS:")
+        for listing, error in errors.items():
+            print(f"ERROR ON LISTING: {listing} - {error}")
+    else:
+        print("There were no Errors!")
