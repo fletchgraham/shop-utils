@@ -85,6 +85,7 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     if leave_page:
         click_region(LEAVE_PAGE)
 
+
 def go_to_path(target: Path, max_tries=10):
     """Assumes file dialog or finder is open."""
     pyautogui.hotkey("command", "shift", "g")
@@ -98,7 +99,7 @@ def go_to_path(target: Path, max_tries=10):
 
     # if not, try again
     tries = 0
-    while pyautogui.locateOnScreen(GO_DIALOG.as_posix(), confidence=9):
+    while pyautogui.locateOnScreen(GO_DIALOG.as_posix(), confidence=.9):
         if tries == max_tries:
             raise TimeoutError(f"Could not go to path: {target} - Max tries reached.")
         
@@ -119,10 +120,12 @@ def wait_for_region(region: Path, timeout=20, confidence=.9):
             time.sleep(.1)
     raise TimeoutError(f"Region never appeared: {region.stem}")
 
+
 def retina(point: pyautogui.Point) -> pyautogui.Point:
     if not point:
         return None
     return pyautogui.Point(point.x // 2, point.y // 2)
+
 
 def click_region(region: Path, delay=2):
     reg = pyautogui.locateCenterOnScreen(region.as_posix(), confidence=0.9)
@@ -132,6 +135,7 @@ def click_region(region: Path, delay=2):
         time.sleep(delay)
     else:
         raise ValueError(f"Region not found: {region.stem}")
+
 
 def scroll_to_find(region: Path, increment=-2):
     for _ in range(20):
