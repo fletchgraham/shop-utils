@@ -4,6 +4,8 @@ import subprocess
 from zipfile import ZipFile
 import random
 
+from PIL import Image
+
 from mockup_automator import main
 from img_utils import crop_resize, optimize_images_in_directory
 from copy_listing import copy_listing_for_folder
@@ -110,3 +112,27 @@ def copy_listing(c, url: str, listings: str):
             print(f"ERROR ON LISTING: {listing} - {error}")
     else:
         print("There were no Errors!")
+
+
+@task
+def geotiff_to_tiff(c, input_path):
+    import numpy as np
+    import rasterio
+    import matplotlib.pyplot as plt
+
+    input_path = Path(input_path)
+
+    # Read the GeoTIFF using rasterio
+    with rasterio.open(input_path) as src:
+        # Read the image data as a numpy array
+        img_data = src.read(1)
+        
+        # Normalize the data to 0-255 for PNG format
+        # This step assumes the image has values in a typical 0-255 range
+        # Adjust as needed for your specific GeoTIFF
+        norm_data = ((img_data - img_data.min()) / (img_data.max() - img_data.min()) * 255).astype(np.uint8)
+        
+        # Save the normalized data as a PNG using matplotlib
+        dst = input_path.with_stem(input_path.stem + "_IMG").with_suffix(".png")
+        plt.imsave(dst, norm_data, cmap='gray', format='png')
+
