@@ -36,7 +36,7 @@ def _get_artfile(listing_dir: Path) -> Path:
 
 
 @task
-def mockup(c, listings, mockups, fit=1800):
+def mockup(c, listings, mockups, fit=1700):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
     mockups_path = Path(mockups)
     mockup_blends = _get_blends_in_folders(mockups_path)
@@ -75,21 +75,44 @@ def optimize(c, target, fit: int=800):
 
 
 @task
-def choose_ten_mockups(c, listings):
+def select_mockups(c, listings):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
     total = len(listings)
     for current, listing in enumerate(listings):
 
         print(f"working on {listing.stem} - {current + 1} of {total}")
         mockup_dir = listing / "mockups"
-        choice_dir = mockup_dir / "selects"
-        choice_dir.mkdir(exist_ok=True)
-        if len(list(choice_dir.iterdir())) == 10:
+        selects_dir = mockup_dir / "selects"
+        selects_dir.mkdir(exist_ok=True)
+        if len(list(selects_dir.iterdir())) == 10:
             continue
-        lo_mockups = [f for f in mockup_dir.iterdir() if f.suffix == ".jpg" and f.stem.split("_")[0] == "lo"]
-        choices = random.sample(lo_mockups, 10)
-        for choice in choices:
-            choice.rename(choice_dir / choice.name)
+        lo_mockups = [
+            f for f in mockup_dir.iterdir()
+            if f.suffix == ".jpg"
+            and f.stem.split("_")[0] == "lo"
+            and not "sheer_curtains" in f.stem
+            ]
+        selects = random.sample(lo_mockups, 10)
+        prefixes = [f"{x}_" for x in range(10)]
+        random.shuffle(prefixes)
+        for prefix, select in zip(prefixes, selects):
+            select.rename(selects_dir / f"{prefix}{select.name}")
+
+
+@task
+def unselect_mockups(c, listings):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    total = len(listings)
+    for current, listing in enumerate(listings):
+
+        print(f"working on {listing.stem} - {current + 1} of {total}")
+        mockup_dir = listing / "mockups"
+        selects_dir = mockup_dir / "selects"
+        if not selects_dir.exists():
+            continue
+        selects = [f for f in selects_dir.iterdir() if f.suffix == ".jpg"]
+        for select in selects:
+            select.rename(mockup_dir / select.name)
 
 
 @task
