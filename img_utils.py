@@ -1,9 +1,7 @@
 from pathlib import Path
 from PIL import Image
 
-def crop_resize(src: Path, dst: Path, new_width: int, new_height: int):
-
-    print(f"resizing {src}")
+def crop_resize(src: Path, dst: Path, new_width: int, new_height: int, quality=95):
 
     with Image.open(src) as img:
 
@@ -26,7 +24,7 @@ def crop_resize(src: Path, dst: Path, new_width: int, new_height: int):
 
         converted = resized_img.convert("RGB")
 
-        converted.save(dst, quality=95, optimize=True)
+        converted.save(dst, quality=quality, optimize=True)
 
 
 def resize_image(input_path, output_path, quality=85, base_width=800):
@@ -48,6 +46,7 @@ def resize_image(input_path, output_path, quality=85, base_width=800):
         
         # Save image with optimization
         img.save(output_path, "JPEG", quality=quality, optimize=True, progressive=True)
+
 
 def optimize_images_in_directory(directory: Path, base_width=800):
     """

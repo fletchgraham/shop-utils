@@ -54,19 +54,49 @@ def render(c, src, percentage=100):
     render_script = ROOT / "render.py"
     for blend in blends:
         c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
-        src_path = blend.parent / blend.stem / f"{blend.stem}_src.png"
-        to_zip = []
-        for ratio, dims in RATIOS.items():
-            w = int(dims[0] * percentage / 100)
-            h = int(dims[1] * percentage / 100)
-            out_path = src_path.with_stem(src_path.stem.replace("src", ratio)).with_suffix(".jpg")
-            crop_resize(src_path, out_path, new_width=w, new_height=h)
-            to_zip.append(out_path)
-        
-        zip_path = src_path.with_stem("_".join(src_path.stem.split("_")[:-1])).with_suffix(".zip")
-        with ZipFile(zip_path, "w") as zipf:
-            for f in to_zip:
-                zipf.write(f, arcname=f.name)
+
+
+def resize_and_zip(src: Path, quality=95):
+    to_zip = []
+    for ratio, dims in RATIOS.items():
+        w = dims[0]
+        h = dims[1]
+        out_path = src.with_stem(src.stem.replace("src", ratio)).with_suffix(".jpg")
+        crop_resize(src, out_path, new_width=w, new_height=h, quality=quality)
+        to_zip.append(out_path)
+        print(f"processed ratio {ratio}")
+    
+    zip_path = build_zip_path(src)
+    with ZipFile(zip_path, "w") as zipf:
+        for f in to_zip:
+            zipf.write(f, arcname=f.name)
+
+
+def build_zip_path(src: Path):
+    return src.with_stem("_".join(src.stem.split("_")[:-1])).with_suffix(".zip")
+    
+
+def resize_and_zip_to_target_size(src: Path, target_size=20000000):  # 20 mb
+    quality = 100
+    zip_size = float('inf')
+    zip_path = build_zip_path(src)
+    while zip_size > target_size:
+        if quality < 100:
+            print(f"zip size {zip_size} exeeds target. lowering quality...")
+        resize_and_zip(src, quality=quality)
+        zip_size = zip_path.stat().st_size
+        print(f"zip size: {zip_size}")
+        quality -= 1
+    print(f"target size reached. final zip size: {zip_size}")
+
+
+@task
+def process_art(c, listings):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    for listing in listings:
+        src = listing / (listing.stem + "_src.png")
+        print(f"processing {listing.name}...")
+        resize_and_zip_to_target_size(src)
 
 
 @task
