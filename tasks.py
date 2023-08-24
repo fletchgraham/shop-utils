@@ -56,6 +56,14 @@ def render(c, src, percentage=100):
         c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
 
 
+@task
+def render_tv(c, blends):
+    blends = [f for f in Path(blends).iterdir() if f.suffix.lower() == ".blend"]
+    render_script = ROOT / "render_tv.py"
+    for blend in blends:
+        c.run(f"blender -b {blend} -P {render_script}")
+
+
 def resize_and_zip(src: Path, quality=95):
     to_zip = []
     for ratio, dims in RATIOS.items():
