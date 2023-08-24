@@ -21,6 +21,7 @@ RATIOS = {
     "Asizes": (7091, 10008),
 }
 
+
 def _get_blends_in_folders(target: Path) -> list[Path]:
     blends = []
     folders = [f for f in target.iterdir() if f.is_dir()]
@@ -28,10 +29,13 @@ def _get_blends_in_folders(target: Path) -> list[Path]:
         blends.append([file for file in f.iterdir() if file.suffix == ".blend"][0])
     return blends
 
+
 def _get_artfile(listing_dir: Path) -> Path:
     jpgs = [f for f in listing_dir.iterdir() if f.suffix == ".jpg"]
+    if len(jpgs) == 1:  # only one option
+        return jpgs[0]
     for j in jpgs:
-        if j.stem.split("_")[-1] == "3x4":
+        if j.stem.split("_")[-1] == "3x4":  # most print mockups are for this ratio
             return j
 
 
