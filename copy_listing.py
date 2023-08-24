@@ -40,7 +40,10 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
     scroll_to_find(ADD_VIDEO, increment=-5)
 
     # mouse to the primary listing to reveal the delete button
-    pyautogui.moveTo(retina(pyautogui.locateCenterOnScreen(PRIMARY_LISTING.as_posix())))
+    primary_listing_btn = retina(
+        pyautogui.locateCenterOnScreen(PRIMARY_LISTING.as_posix(), confidence=.9)
+        )
+    pyautogui.moveTo(primary_listing_btn)
 
     # delete existing photos
     for _ in range(10):
