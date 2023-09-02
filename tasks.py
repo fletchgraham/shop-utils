@@ -59,6 +59,13 @@ def render(c, src, percentage=100):
     for blend in blends:
         c.run(f"blender -b {blend} -P {render_script} -- {percentage}")
 
+@task
+def pack(c, blends):
+    blends = [f for f in Path(blends).iterdir() if f.suffix.lower() == ".blend"]
+    pack_script = ROOT / "pack.py"
+    for blend in blends:
+        c.run(f"blender -b {blend} -P {pack_script}")
+
 
 @task
 def render_tv(c, blends):
