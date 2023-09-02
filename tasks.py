@@ -187,6 +187,13 @@ def copy_listing(c, url: str, listings: str):
 
 
 @task
+def move_blends(c, listings):
+    blends = [f for f in Path(listings).iterdir() if f.suffix.lower() in [".blend", ".blend1"]]
+    for blend in blends:
+        blend.rename(blend.parent / blend.stem/ blend.name)
+
+
+@task
 def geotiff_to_tiff(c, input_path):
     import numpy as np
     import rasterio
