@@ -95,6 +95,10 @@ def build_zip_path(src: Path):
     return src.with_stem("_".join(src.stem.split("_")[:-1])).with_suffix(".zip")
     
 
+def zip_path_from_listing(listing: Path):
+    return listing / (listing.name + ".zip")
+
+
 def resize_and_zip_to_target_size(src: Path, target_size=20000000):  # 20 mb
     quality = 100
     zip_size = float('inf')
@@ -119,33 +123,42 @@ def process_art(c, listings):
 
 
 @task
+def process_tv(c, listings):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    for listing in listings:
+        zip_path = zip_path_from_listing(listing)
+        f = listing / f"{listing.name}.jpg"
+        with ZipFile(zip_path, "w") as zipf:
+            zipf.write(f, arcname=f.name)
+
+
+@task
 def optimize(c, target, fit: int=800):
     optimize_images_in_directory(Path(target), base_width=fit)
 
 
 @task
-def select_mockups(c, listings):
+def select_mockups(c, listings, number=10):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
     total = len(listings)
     for current, listing in enumerate(listings):
 
-        print(f"working on {listing.stem} - {current + 1} of {total}")
         mockup_dir = listing / "mockups"
         selects_dir = mockup_dir / "selects"
         selects_dir.mkdir(exist_ok=True)
-        if len(list(selects_dir.iterdir())) == 10:
+        if len(list(selects_dir.iterdir())) == number:
             continue
         lo_mockups = [
             f for f in mockup_dir.iterdir()
             if f.suffix == ".jpg"
             and f.stem.split("_")[0] == "lo"
-            and not "sheer_curtains" in f.stem
             ]
-        selects = random.sample(lo_mockups, 10)
-        prefixes = [f"{x}_" for x in range(10)]
-        random.shuffle(prefixes)
-        for prefix, select in zip(prefixes, selects):
-            select.rename(selects_dir / f"{prefix}{select.name}")
+        if len(lo_mockups) <= number:
+            selects = lo_mockups
+        else:
+            selects = random.sample(lo_mockups, number)
+        for select in selects:
+            select.rename(selects_dir / select.name)
 
 
 @task
@@ -165,12 +178,13 @@ def unselect_mockups(c, listings):
 
 
 @task
-def copy_listing(c, url: str, listings: str):
+def copy_listing(c, id: str, listings: str):
     listings = [x for x in Path(listings).iterdir() if x.is_dir()]
     total = len(listings)
     errors = {}
     for current, listing in enumerate(listings):
         try:
+            url = f"https://www.etsy.com/your/shops/me/listing-editor/edit/{id}"
             copy_listing_for_folder(url, Path(listing))
             print(f"Published {listing.stem} - {current + 1} of {total}")
         except Exception as e:
