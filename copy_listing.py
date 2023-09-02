@@ -47,7 +47,10 @@ def copy_listing_for_folder(edit_url: str, listing_dir: Path):
 
     # delete existing photos
     for _ in range(10):
-        click_region(DELETE_PHOTO, delay=.05)
+        try:
+            click_region(DELETE_PHOTO, delay=.05)
+        except ValueError:  # likely all photos were deleted
+            pass
 
     # add new photos
     click_region(ADD_PHOTOS, delay=1.5)
