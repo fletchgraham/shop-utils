@@ -30,7 +30,7 @@ def expand_image(image, x, y, width, height):
     new_height = height + abs(y) if y < 0 else img_height
 
     # Create a new image with the calculated dimensions
-    expanded_image = Image.new("RGB", (new_width, new_height), color=(195, 195, 195))
+    expanded_image = Image.new("RGB", (new_width, new_height), color=(230, 230, 230))
     
     # Determine where to paste the original image in the expanded image
     paste_x = abs(x) if x < 0 else 0
@@ -41,14 +41,17 @@ def expand_image(image, x, y, width, height):
     return expanded_image
 
 
+def resize_for_web(image):
+    """Resize the image for 4x3 aspect ratio with a short side of 2600 pixels."""
+    return image.resize((3467, 2600))
+
 def crop_or_expand_image(input_path, output_path, coords):
-    """Crop or expand the image based on the coordinates."""
+    """Crop or expand the image based on the coordinates, then resize for web."""
     with Image.open(input_path) as img:
         x, y, width, height = coords
         
         if x < 0 or y < 0:
             img = expand_image(img, x, y, width, height)
-            # Adjust coordinates after expansion
             left = max(0, x)
             upper = max(0, y)
         else:
@@ -58,7 +61,8 @@ def crop_or_expand_image(input_path, output_path, coords):
         lower = upper + height
         
         cropped_image = img.crop((left, upper, right, lower))
-        cropped_image.save(output_path)
+        web_optimized_image = resize_for_web(cropped_image)
+        web_optimized_image.save(output_path, "JPEG", quality=85)  # You can adjust the quality for further optimization
 
 
 def crop_mockup(mockup: Path):
