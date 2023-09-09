@@ -42,8 +42,15 @@ def expand_image(image, x, y, width, height):
 
 
 def resize_for_web(image):
-    """Resize the image for 4x3 aspect ratio with a short side of 2600 pixels."""
-    return image.resize((3467, 2600))
+    """Resize the image for 4x3 aspect ratio with a short side of 2600 pixels, only if it's larger than the target."""
+    target_width, target_height = 2600, 1950
+    img_width, img_height = image.size
+
+    # Check if the image is larger than the target dimensions
+    if img_width > target_width or img_height > target_height:
+        return image.resize((target_width, target_height))
+    return image
+
 
 def crop_or_expand_image(input_path, output_path, coords):
     """Crop or expand the image based on the coordinates, then resize for web."""
@@ -62,7 +69,7 @@ def crop_or_expand_image(input_path, output_path, coords):
         
         cropped_image = img.crop((left, upper, right, lower))
         web_optimized_image = resize_for_web(cropped_image)
-        web_optimized_image.save(output_path, "JPEG", quality=85)  # You can adjust the quality for further optimization
+        web_optimized_image.save(output_path, "JPEG", quality=80)
 
 
 def crop_mockup(mockup: Path):
