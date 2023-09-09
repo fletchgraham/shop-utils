@@ -174,7 +174,7 @@ def select_mockups(c, listings, number=10):
         lo_mockups = [
             f for f in mockup_dir.iterdir()
             if f.suffix == ".jpg"
-            and f.stem.split("_")[0] == "lo"
+            and f.stem.split("_")[0] == "cropped"
             ]
         if len(lo_mockups) <= number:
             selects = lo_mockups
