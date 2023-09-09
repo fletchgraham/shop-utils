@@ -8,6 +8,7 @@ from PIL import Image
 
 from mockup_automator import main
 from img_utils import crop_resize, optimize_images_in_directory
+from crops import crop_mockup
 from copy_listing import copy_listing_for_folder
 
 ROOT = Path(__file__).parent
@@ -100,11 +101,11 @@ def zip_path_from_listing(listing: Path):
 
 
 def resize_and_zip_to_target_size(src: Path, target_size=20000000):  # 20 mb
-    quality = 100
+    quality = 95
     zip_size = float('inf')
     zip_path = build_zip_path(src)
     while zip_size > target_size:
-        if quality < 100:
+        if quality < 95:
             print(f"zip size {zip_size} exeeds target. lowering quality...")
         resize_and_zip(src, quality=quality)
         zip_size = zip_path.stat().st_size
@@ -135,6 +136,28 @@ def process_tv(c, listings):
 @task
 def optimize(c, target, fit: int=800):
     optimize_images_in_directory(Path(target), base_width=fit)
+
+
+@task
+def crop_mockups(c, listings):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    for listing in listings:
+        mockup_dir = listing / "mockups"
+        mockups = [f for f in mockup_dir.iterdir() if f.suffix == ".jpg"]
+        for mockup in mockups:
+            crop_mockup(mockup)
+
+
+@task
+def delete_mockups_by_prefix(c, prefix, listings):
+    listings = [x for x in Path(listings).iterdir() if x.is_dir()]
+    for listing in listings:
+        mockup_dir = listing / "mockups"
+        mockups = [f for f in mockup_dir.iterdir() if f.suffix == ".jpg"]
+        for mockup in mockups:
+            if mockup.name[:len(prefix)] == prefix:
+                print(f"deleting {mockup.as_posix()}")
+                mockup.unlink()
 
 
 @task
